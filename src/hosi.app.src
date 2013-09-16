@@ -1,12 +1,15 @@
+%% -*- mode: erlang -*-
+%% ex: ft=erlang ts=2 sw=2 et
 {application, hosi,
  [
-  {description, ""},
-  {vsn, "1"},
+  {description, "Hosi Stats Logger"},
+  {vsn, git},
   {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
+  {applications, 
+   [
+    kernel,
+    stdlib
+   ]},
   {mod, { hosi_app, []}},
   {env, []}
  ]}.
