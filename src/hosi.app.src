@@ -1,0 +1,12 @@
+{application, hosi,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { hosi_app, []}},
+  {env, []}
+ ]}.
