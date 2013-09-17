@@ -3,6 +3,7 @@
 -export([start_link/1]).
 -export([ctime/3]).
 -export([snapshot/1]).
+-export([stop/1]).
 
 %% gen_server callbacks
 -export([init/1,
@@ -34,6 +35,9 @@ ctime(Pid, Label, {Time, Unit}) ->
 snapshot(Pid) when is_pid(Pid) ->
     gen_server:call(Pid, snapshot).
 
+stop(Pid) ->
+    gen_server:cast(Pid, stop).
+
 %% ===================================================================
 %% gen_server
 %% ===================================================================
@@ -54,6 +58,9 @@ handle_cast({ctime_time, Label, {Time, Unit}},
     CTimer = fetch_ctimer(Label, Metrics),
     CTimer1 = update_ctimer(CTimer, {Time, Unit}),
     {noreply, State#state{metrics = store_ctimer(Label, CTimer1, Metrics)}};
+
+handle_cast(stop, State) ->
+    {stop, normal, State};
 
 handle_cast(_Request, State) ->
     {noreply, State}.
