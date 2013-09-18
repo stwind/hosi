@@ -4,6 +4,8 @@
 -export([stop/0]).
 
 -export([new/1]).
+-export([done/1]).
+-export([stop/1]).
 -export([snapshot/1]).
 
 -export([ctime/3]).
@@ -34,3 +36,9 @@ ctime(_, _, _) ->
 
 snapshot(Pid) ->
     hosi_worker:snapshot(Pid).
+
+done(Pid) ->
+    hosi_worker:done(Pid).
+
+stop(Pid) ->
+    hosi_worker:stop(Pid).
