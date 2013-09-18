@@ -3,6 +3,7 @@
 -export([start_link/1]).
 -export([ctime/3]).
 -export([snapshot/1]).
+-export([done/1]).
 -export([stop/1]).
 
 %% gen_server callbacks
@@ -16,7 +17,8 @@
 -record(state, {
           id = <<>> :: binary(),
           metrics = dict:new() :: dict(),
-          start_time = os:timestamp() :: erlang:timestamp()
+          start_time = os:timestamp() :: erlang:timestamp(),
+          end_time :: erlang:timestamp()
          }).
 
 -record(ctimer, {count = 0 :: non_neg_integer(),
@@ -35,6 +37,9 @@ ctime(Pid, Label, {Time, Unit}) ->
 snapshot(Pid) when is_pid(Pid) ->
     gen_server:call(Pid, snapshot).
 
+done(Pid) ->
+    gen_server:cast(Pid, done).
+
 stop(Pid) ->
     gen_server:cast(Pid, stop).
 
@@ -46,8 +51,15 @@ init([Id]) ->
     {ok, #state{ id = Id }}.
 
 handle_call(snapshot, _From, 
-            #state{start_time=StartTime, metrics=Metrics} = State) ->
-    Elapsed = timer:now_diff(os:timestamp(), StartTime) div 1000,
+            #state{start_time=StartTime, 
+                   metrics=Metrics,
+                   end_time=Endtime} = State) ->
+    Elapsed = case Endtime of
+                  undefined ->
+                      timer:now_diff(os:timestamp(), StartTime) div 1000;
+                  _ ->
+                      timer:now_diff(Endtime, StartTime) div 1000
+              end,
     {reply, make_log_tuples(Elapsed, Metrics), State};
 
 handle_call(_, _From, State) ->
@@ -58,6 +70,9 @@ handle_cast({ctime_time, Label, {Time, Unit}},
     CTimer = fetch_ctimer(Label, Metrics),
     CTimer1 = update_ctimer(CTimer, {Time, Unit}),
     {noreply, State#state{metrics = store_ctimer(Label, CTimer1, Metrics)}};
+
+handle_cast(done, State) ->
+    {noreply, State#state{end_time = os:timestamp()}};
 
 handle_cast(stop, State) ->
     {stop, normal, State};
